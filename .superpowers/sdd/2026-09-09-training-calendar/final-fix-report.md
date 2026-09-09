@@ -3,7 +3,7 @@
 ## Implemented fixes
 
 - Retained each SwiftData test `ModelContainer` in a `RepositoryHarness`, so a repository never outlives the container that owns its `ModelContext`.
-- Deferred a missing bundled-fixture setup failure into `UnavailableWorkoutFixtureSource`; the app now reaches cache-first loading and its normal error UI instead of terminating in `App.init`.
+- Configured the production root to use `RemoteWorkoutFixtureSource`, so cache-first loading and normal recovery UI handle remote failures without requiring a bundled fallback resource.
 - Split completion-save errors from refresh errors. Completion failures now instruct the user to tap the workout again, while refresh errors alone expose Retry. Refresh and initial-load work are coalesced to prevent duplicate refreshes.
 - Rebuild week presentation from the last known snapshot on scene activation, calendar-day rollover, and system time-zone changes.
 - Made empty day containers occupy the full available width with leading alignment.

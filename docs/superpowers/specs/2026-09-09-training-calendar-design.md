@@ -11,7 +11,7 @@
 
 Build a focused mobile training calendar that demonstrates accurate SwiftUI implementation, clear architecture, deterministic date behavior, cache-first loading, and local workout completion. The deliverable is scoped for a 24-hour hiring exercise and covers the required behavior from `Everfit_Mobile_Test Guide.pdf`.
 
-The app displays the current Monday-through-Sunday week only. It does not call the unavailable Mockable endpoint. An asynchronously loaded bundled JSON fixture supplies representative workout content based on the density and content patterns in the linked Figma mobile designs.
+The app displays the current Monday-through-Sunday week only. It asynchronously loads workout definitions from the supplied Everfit mock API and maps them into the calendar's Monday-first model.
 
 ## Goals
 
@@ -20,7 +20,7 @@ The app displays the current Monday-through-Sunday week only. It does not call t
 - Show workout name, exercise count, date-derived status, and completed checkmark.
 - Toggle any workout between completed and incomplete using its stable ID.
 - Persist both workout data and local completion overrides across launches.
-- Load cached content immediately, then refresh it asynchronously from the bundled fixture.
+- Load cached content immediately, then refresh it asynchronously from the Everfit mock API.
 - Match the linked Figma node for visual tokens and presentation details.
 - Keep date, status, repository, and view logic independently testable.
 - Include the documentation and walkthrough guidance required for submission.
@@ -28,7 +28,7 @@ The app displays the current Monday-through-Sunday week only. It does not call t
 ## Non-goals
 
 - Previous-week or next-week navigation.
-- Network requests or synchronization with a remote server.
+- Synchronization with a production remote server.
 - Workout detail, editing, creation, deletion, or exercise-level interactions.
 - Authentication, user profiles, notifications, analytics, or background refresh.
 - Third-party libraries.
@@ -88,43 +88,33 @@ Effective completion is resolved before the date-derived state. A local completi
 
 All day comparisons use the user's current Calendar and time zone after normalizing dates to the start of day. Locale affects display text but never changes Monday as the first day of this feature's week.
 
-## Fixture Contract
+## Remote API Contract
 
-The bundled resource is named `workouts.json`. It contains an array of records with this contract:
+The production source is `https://thinhleeverfit.github.io/everfit-ios-test-mock-api/workouts.json`. It returns a `data` array of weekday records, each with a `day` offset and its `assignments`:
 
 ```json
 {
-  "id": "monday-upper-body",
-  "name": "Upper Body Strength",
-  "exerciseCount": 8,
-  "weekdayOffset": 0,
-  "initiallyCompleted": false
+  "data": [{
+    "day": 0,
+    "assignments": [{
+      "_id": "monday-upper-body",
+      "title": "Upper Body Strength",
+      "total_exercise": 8,
+      "status": 1
+    }]
+  }]
 }
 ```
 
 Field rules:
 
-- `id` is a non-empty unique string and remains stable across fixture refreshes.
-- `name` is a non-empty display string.
-- `exerciseCount` is an integer greater than or equal to zero.
-- `weekdayOffset` is an integer from `0` through `6`, where `0` is Monday.
-- `initiallyCompleted` is a Boolean used only until a local override exists.
+- `day` is an integer from `0` through `6`, where `0` is Monday.
+- `_id` is a non-empty unique workout identifier and remains stable across refreshes.
+- `title` is a non-empty display string.
+- `total_exercise` is an integer greater than or equal to zero.
+- Assignment `status` `2` maps to initially completed; every other status maps to initially incomplete until a local override exists.
 
-The initial fixture contains representative Figma-style training data and intentionally exercises layout cases:
-
-| Offset | Workout | Exercises | Initially completed | Purpose |
-|---:|---|---:|---:|---|
-| 0 | Upper Body Strength | 8 | No | Standard card |
-| 0 | Core & Mobility | 6 | Yes | Multiple cards and completed styling |
-| 1 | Morning Cardio | 5 | No | Standard card |
-| 2 | Full Body Workout | 10 | No | Two-digit exercise count |
-| 2 | Recovery Stretch | 4 | No | Multiple cards on another day |
-| 4 | Lower Body Strength | 9 | No | Standard card |
-| 5 | Weekend Endurance and Conditioning Session | 12 | No | Required name truncation |
-
-Thursday and Sunday are intentionally empty. Relative offsets ensure the app always demonstrates the current week regardless of its launch date.
-
-The decoder rejects the refresh as a whole if JSON is malformed, IDs are duplicated, or any field violates the contract. It does not partially replace a valid cache with incomplete data.
+The decoder rejects a response as a whole if JSON is malformed, an HTTP response is not successful, IDs are duplicated, or any mapped field violates the contract. It does not partially replace a valid cache with incomplete data.
 
 ## Architecture
 
@@ -169,7 +159,7 @@ The view model groups records by weekday offset, resolves effective completion, 
 - Remove cached definitions and overrides for IDs removed from the refreshed fixture.
 - Persist an explicit Boolean completion override for each toggle.
 
-`BundledWorkoutFixtureSource` reads and decodes `workouts.json` asynchronously. Tests replace it with controlled sources that return records, suspend loading, or throw errors.
+`RemoteWorkoutFixtureSource` requests, decodes, and validates the API response asynchronously. Tests replace it with controlled sources that return records, suspend loading, or throw errors.
 
 SwiftData stores two model types:
 
@@ -183,8 +173,8 @@ Separating the override from the definition ensures a locally unmarked `false` r
 1. The screen creates the view model and starts `load()` once.
 2. The view model calculates the current Monday-through-Sunday dates immediately.
 3. The repository reads SwiftData. Cached records appear without waiting for fixture decoding.
-4. The repository starts an asynchronous bundled-fixture refresh.
-5. The source decodes and validates every fixture record.
+4. The repository starts an asynchronous remote API refresh.
+5. The source decodes and validates every API assignment.
 6. The repository replaces cached definitions in one persistence transaction and retains applicable local overrides.
 7. The view model rebuilds seven day presentations from refreshed records.
 8. When a card is tapped, the view model asks the repository to persist the inverse of its current effective completion.
@@ -203,7 +193,7 @@ All seven date headers are visible during every state.
 - **Refresh fails without cache:** each date remains visible and the workout region presents an inline error with retry.
 - **Toggle persistence fails:** restore the prior visible state and present a non-blocking error. Never show a completion state that was not persisted.
 
-Because the production source is bundled, failures normally indicate a missing or invalid app resource. Error behavior remains specified and testable through dependency injection.
+Because the production source is remote, failures can result from connectivity, an unsuccessful HTTP response, or invalid response data. Error behavior remains specified and testable through dependency injection.
 
 ## Testing Strategy
 
@@ -215,14 +205,14 @@ Unit tests cover:
 - Every status-table branch and completed-state precedence.
 - Zero, one, and multiple workouts grouped into the correct weekday.
 - Singular and plural exercise-count formatting.
-- Fixture validation for malformed JSON, duplicate IDs, invalid offsets, empty names, and negative counts.
-- Cache-first results followed by fixture refresh results.
+- Remote-response validation for malformed JSON, HTTP failures, duplicate IDs, invalid offsets, empty names, and negative counts.
+- Cache-first results followed by remote refresh results.
 - Preservation of explicit `true` and `false` completion overrides during refresh.
 - Removal of stale records and their overrides.
 - Toggle-by-ID persistence and restoration after recreating the repository and view model.
 - Initial-loading, cached-refresh, initial-error, and cached-error presentation states.
 
-One focused UI test launches with deterministic fixture and clock dependencies, verifies all seven date headers, confirms two workouts appear in one day, taps a workout, observes its checkmark and Completed status, and relaunches to confirm persistence.
+One focused UI test launches with deterministic remote-source and clock dependencies, verifies all seven date headers, confirms two workouts appear in one day, taps a workout, observes its checkmark and Completed status, and relaunches to confirm persistence.
 
 Snapshot tests are optional and should be added only if the project already has a reliable snapshot setup. Manual comparison against Figma remains required for pixel-level visual review, Dynamic Type, dark/light appearance if represented in the design, and common phone widths.
 
@@ -233,14 +223,14 @@ The feature is complete when:
 - The app builds and launches on an iOS 17-or-later simulator.
 - The current week contains exactly seven ordered Monday-through-Sunday day containers.
 - Today's numeric date has the Figma purple highlight.
-- Fixture workouts appear on their relative current-week days, including multiple workouts in one day and empty days.
+- API workouts appear on their mapped current-week days, including multiple workouts in one day and empty days.
 - Long names truncate with an ellipsis.
 - Every workout displays its exercise count.
 - Past incomplete, today incomplete, future incomplete, and completed workouts follow the status table.
 - Every workout toggles by stable ID, including future workouts.
 - Completed workouts display a trailing checkmark.
 - Completion and explicit uncompletion survive app relaunch.
-- Cached content appears before the asynchronous fixture refresh completes.
+- Cached content appears before the asynchronous remote refresh completes.
 - Loading and error states retain all seven correct dates.
 - Automated tests for domain, repository, view-model, and primary UI behavior pass.
 - Visual inspection confirms conformance to the Figma node.
@@ -252,7 +242,7 @@ The feature is complete when:
 - Supported Xcode and iOS versions plus build and run steps.
 - A concise architecture and data-flow explanation.
 - The cache-first refresh and local-override rules.
-- Fixture rationale and instructions for changing sample workouts.
+- The mock API URL and its field-mapping rules.
 - An **AI Collaboration** section naming the tools used and including two or three substantive prompts from the work, such as date/status modeling, cache merge behavior, and test design.
 - A link to the mandatory three-to-five-minute walkthrough video before submission.
 - A short description of the end-to-end feature workflow: requirement review, clarification, design, implementation, testing, review, release, and monitoring.
