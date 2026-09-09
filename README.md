@@ -54,4 +54,4 @@ The feature process is: clarify requirements and exclusions; inspect design and 
 
 ## Video Walkthrough
 
-Before repository submission, add the recorded three-to-five-minute walkthrough URL here. The recording demonstrates the app, architecture, data flow, cache behavior, persistence, test coverage, and AI-assisted decisions.
+https://drive.google.com/file/d/1Mf8v16R-GQs-RLbyGc-7SgHnqUZr11b2/view?usp=sharing
