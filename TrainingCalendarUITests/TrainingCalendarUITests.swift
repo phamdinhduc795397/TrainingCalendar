@@ -1,43 +1,28 @@
-//
-//  TrainingCalendarUITests.swift
-//  TrainingCalendarUITests
-//
-//  Created by Duc Pham on 8/9/26.
-//
-
 import XCTest
 
 final class TrainingCalendarUITests: XCTestCase {
-
-    override func setUpWithError() throws {
-        // Put setup code here. This method is called before the invocation of each test method in the class.
-
-        // In UI tests it is usually best to stop immediately when a failure occurs.
-        continueAfterFailure = false
-
-        // In UI tests it’s important to set the initial state - such as interface orientation - required for your tests before they run. The setUp method is a good place to do this.
-    }
-
-    override func tearDownWithError() throws {
-        // Put teardown code here. This method is called after the invocation of each test method in the class.
-    }
-
-    @MainActor
-    func testExample() throws {
-        // UI tests must launch the application that they test.
+    func testCurrentWeekMultipleWorkoutsAndCompletionPersistsAfterRelaunch() throws {
         let app = XCUIApplication()
+        app.launchArguments = ["-ui-testing", "-reset-store"]
         app.launch()
 
-        // Use XCTAssert and related functions to verify your tests produce the correct results.
-        // XCUIAutomation Documentation
-        // https://developer.apple.com/documentation/xcuiautomation
-    }
-
-    @MainActor
-    func testLaunchPerformance() throws {
-        // This measures how long it takes to launch your application.
-        measure(metrics: [XCTApplicationLaunchMetric()]) {
-            XCUIApplication().launch()
+        for offset in 0...6 {
+            XCTAssertTrue(app.otherElements["day-\(offset)"].waitForExistence(timeout: 3))
         }
+        XCTAssertTrue(app.buttons["workout-monday-upper-body"].waitForExistence(timeout: 3))
+        XCTAssertTrue(app.buttons["workout-monday-core-mobility"].exists)
+
+        let workout = app.buttons["workout-tuesday-cardio"]
+        XCTAssertTrue(workout.waitForExistence(timeout: 3))
+        workout.tap()
+        XCTAssertTrue(workout.label.contains("Completed"))
+
+        app.terminate()
+        app.launchArguments = ["-ui-testing"]
+        app.launch()
+
+        let persistedWorkout = app.buttons["workout-tuesday-cardio"]
+        XCTAssertTrue(persistedWorkout.waitForExistence(timeout: 3))
+        XCTAssertTrue(persistedWorkout.label.contains("Completed"))
     }
 }
