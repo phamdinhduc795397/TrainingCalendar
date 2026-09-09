@@ -7,7 +7,6 @@ struct TrainingCalendarApp: App {
     private let viewModel: TrainingCalendarViewModel
 
     init() {
-        let isUITesting = ProcessInfo.processInfo.arguments.contains("-ui-testing")
         let configuration = ModelConfiguration(isStoredInMemoryOnly: false)
         let modelContainer: ModelContainer
         do {
@@ -21,13 +20,8 @@ struct TrainingCalendarApp: App {
         }
 
         let source: any WorkoutFixtureSource = RemoteWorkoutFixtureSource()
-        if isUITesting && ProcessInfo.processInfo.arguments.contains("-reset-store") {
-            try? modelContainer.mainContext.delete(model: CachedWorkout.self)
-            try? modelContainer.mainContext.delete(model: WorkoutCompletionOverride.self)
-            try? modelContainer.mainContext.save()
-        }
-        let now: () -> Date = isUITesting ? { Self.uiTestDate } : { Date() }
-        let calendar = isUITesting ? Self.uiTestCalendar : Calendar.current
+        let now: () -> Date = { Date() }
+        let calendar = Calendar.current
         let repository = SwiftDataWorkoutRepository(context: modelContainer.mainContext, source: source, now: now)
         container = modelContainer
         viewModel = TrainingCalendarViewModel(repository: repository, calendar: calendar, now: now)
@@ -38,16 +32,5 @@ struct TrainingCalendarApp: App {
             TrainingCalendarScreen(viewModel: viewModel)
         }
         .modelContainer(container)
-    }
-
-    private static let uiTestDate: Date = {
-        uiTestCalendar.date(from: DateComponents(year: 2026, month: 9, day: 9, hour: 12))!
-    }()
-
-    private static var uiTestCalendar: Calendar {
-        var calendar = Calendar(identifier: .gregorian)
-        calendar.timeZone = TimeZone(secondsFromGMT: 0)!
-        calendar.locale = Locale(identifier: "en_US_POSIX")
-        return calendar
     }
 }

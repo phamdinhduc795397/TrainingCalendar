@@ -14,19 +14,11 @@
 			remoteGlobalIDString = 7D9D933E3050530400576242;
 			remoteInfo = TrainingCalendar;
 		};
-		7D9D93593050530500576242 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 7D9D93373050530400576242 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 7D9D933E3050530400576242;
-			remoteInfo = TrainingCalendar;
-		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
 		7D9D933F3050530400576242 /* TrainingCalendar.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TrainingCalendar.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		7D9D934E3050530500576242 /* TrainingCalendarTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TrainingCalendarTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		7D9D93583050530500576242 /* TrainingCalendarUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TrainingCalendarUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -38,11 +30,6 @@
 		7D9D93513050530500576242 /* TrainingCalendarTests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = TrainingCalendarTests;
-			sourceTree = "<group>";
-		};
-		7D9D935B3050530500576242 /* TrainingCalendarUITests */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = TrainingCalendarUITests;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -62,13 +49,6 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		7D9D93553050530500576242 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -77,7 +57,6 @@
 			children = (
 				7D9D93413050530400576242 /* TrainingCalendar */,
 				7D9D93513050530500576242 /* TrainingCalendarTests */,
-				7D9D935B3050530500576242 /* TrainingCalendarUITests */,
 				7D9D93403050530400576242 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -87,7 +66,6 @@
 			children = (
 				7D9D933F3050530400576242 /* TrainingCalendar.app */,
 				7D9D934E3050530500576242 /* TrainingCalendarTests.xctest */,
-				7D9D93583050530500576242 /* TrainingCalendarUITests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -140,29 +118,6 @@
 			productReference = 7D9D934E3050530500576242 /* TrainingCalendarTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
-		7D9D93573050530500576242 /* TrainingCalendarUITests */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = 7D9D93683050530500576242 /* Build configuration list for PBXNativeTarget "TrainingCalendarUITests" */;
-			buildPhases = (
-				7D9D93543050530500576242 /* Sources */,
-				7D9D93553050530500576242 /* Frameworks */,
-				7D9D93563050530500576242 /* Resources */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-				7D9D935A3050530500576242 /* PBXTargetDependency */,
-			);
-			fileSystemSynchronizedGroups = (
-				7D9D935B3050530500576242 /* TrainingCalendarUITests */,
-			);
-			name = TrainingCalendarUITests;
-			packageProductDependencies = (
-			);
-			productName = TrainingCalendarUITests;
-			productReference = 7D9D93583050530500576242 /* TrainingCalendarUITests.xctest */;
-			productType = "com.apple.product-type.bundle.ui-testing";
-		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -177,10 +132,6 @@
 						CreatedOnToolsVersion = 26.6;
 					};
 					7D9D934D3050530500576242 = {
-						CreatedOnToolsVersion = 26.6;
-						TestTargetID = 7D9D933E3050530400576242;
-					};
-					7D9D93573050530500576242 = {
 						CreatedOnToolsVersion = 26.6;
 						TestTargetID = 7D9D933E3050530400576242;
 					};
@@ -202,7 +153,6 @@
 			targets = (
 				7D9D933E3050530400576242 /* TrainingCalendar */,
 				7D9D934D3050530500576242 /* TrainingCalendarTests */,
-				7D9D93573050530500576242 /* TrainingCalendarUITests */,
 			);
 		};
 /* End PBXProject section */
@@ -216,13 +166,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		7D9D934C3050530500576242 /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		7D9D93563050530500576242 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -246,13 +189,6 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		7D9D93543050530500576242 /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -260,11 +196,6 @@
 			isa = PBXTargetDependency;
 			target = 7D9D933E3050530400576242 /* TrainingCalendar */;
 			targetProxy = 7D9D934F3050530500576242 /* PBXContainerItemProxy */;
-		};
-		7D9D935A3050530500576242 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 7D9D933E3050530400576242 /* TrainingCalendar */;
-			targetProxy = 7D9D93593050530500576242 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -507,50 +438,6 @@
 			};
 			name = Release;
 		};
-		7D9D93693050530500576242 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				GENERATE_INFOPLIST_FILE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.TrainingCalendarUITests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SDKROOT = iphoneos;
-				STRING_CATALOG_GENERATE_SYMBOLS = NO;
-				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
-				SWIFT_APPROACHABLE_CONCURRENCY = YES;
-				SWIFT_EMIT_LOC_STRINGS = NO;
-				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_TARGET_NAME = TrainingCalendar;
-			};
-			name = Debug;
-		};
-		7D9D936A3050530500576242 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				GENERATE_INFOPLIST_FILE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.TrainingCalendarUITests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SDKROOT = iphoneos;
-				STRING_CATALOG_GENERATE_SYMBOLS = NO;
-				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
-				SWIFT_APPROACHABLE_CONCURRENCY = YES;
-				SWIFT_EMIT_LOC_STRINGS = NO;
-				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_TARGET_NAME = TrainingCalendar;
-			};
-			name = Release;
-		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -577,15 +464,6 @@
 			buildConfigurations = (
 				7D9D93663050530500576242 /* Debug */,
 				7D9D93673050530500576242 /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		7D9D93683050530500576242 /* Build configuration list for PBXNativeTarget "TrainingCalendarUITests" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				7D9D93693050530500576242 /* Debug */,
-				7D9D936A3050530500576242 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

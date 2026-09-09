@@ -23,7 +23,7 @@ The app requests `https://thinhleeverfit.github.io/everfit-ios-test-mock-api/wor
 
 ## Testing
 
-Run the full suite with:
+Run the unit-test suite with:
 
 `xcodebuild test -project TrainingCalendar.xcodeproj -scheme TrainingCalendar -destination 'platform=iOS Simulator,name=iPhone 17 Pro,OS=26.5'`
 
