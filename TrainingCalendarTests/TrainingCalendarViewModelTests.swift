@@ -33,14 +33,38 @@ struct TrainingCalendarViewModelTests {
     }
 
     @Test func toggleUsesWorkoutIDAndPublishesPersistedResult() async {
-        let repository = RecordingRepository(snapshot: snapshot(offsets: [5]))
+        let repository = RecordingRepository(snapshot: snapshot(offsets: [2]))
         let viewModel = makeViewModel(repository: repository)
         await viewModel.load()
 
         await viewModel.toggleCompletion(workoutID: "workout-0")
 
         #expect(repository.toggledIDs == ["workout-0"])
-        #expect(viewModel.days[5].workouts[0].status == .completed)
+        #expect(viewModel.days[2].workouts[0].status == .completed)
+    }
+
+    @Test func completedFutureWorkoutRemainsFutureWithoutStatusText() async {
+        let repository = RecordingRepository(snapshot: WorkoutSnapshot(
+            definitions: [
+                WorkoutDefinition(
+                    id: "future-completed",
+                    name: "Future workout",
+                    exerciseCount: 3,
+                    weekdayOffset: 6,
+                    initiallyCompleted: true,
+                    sortOrder: 0
+                )
+            ],
+            completionOverrides: [:]
+        ))
+        let viewModel = makeViewModel(repository: repository)
+
+        await viewModel.load()
+
+        let workout = viewModel.days[6].workouts[0]
+        #expect(workout.status == .future)
+        #expect(workout.statusText == nil)
+        #expect(workout.accessibilityLabel.contains("Future"))
     }
 
     @Test func preservesLongNameAndFormatsExerciseCounts() async {
@@ -79,7 +103,7 @@ struct TrainingCalendarViewModelTests {
     }
 
     @Test func successfulToggleClearsPreviousSaveError() async {
-        let repository = RecordingRepository(snapshot: snapshot(offsets: [5]))
+        let repository = RecordingRepository(snapshot: snapshot(offsets: [2]))
         let viewModel = makeViewModel(repository: repository)
         await viewModel.load()
         repository.failNextToggle = true
@@ -88,12 +112,12 @@ struct TrainingCalendarViewModelTests {
 
         #expect(viewModel.refreshErrorMessage == nil)
         #expect(viewModel.completionErrorMessage == "Unable to save completion. Tap the workout to try again.")
-        #expect(viewModel.days[5].workouts[0].isCompleted == false)
+        #expect(viewModel.days[2].workouts[0].isCompleted == false)
 
         await viewModel.toggleCompletion(workoutID: "workout-0")
 
-        #expect(viewModel.days[5].workouts[0].isCompleted)
-        #expect(viewModel.days[5].workouts[0].status == .completed)
+        #expect(viewModel.days[2].workouts[0].isCompleted)
+        #expect(viewModel.days[2].workouts[0].status == .completed)
         #expect(viewModel.completionErrorMessage == nil)
     }
 

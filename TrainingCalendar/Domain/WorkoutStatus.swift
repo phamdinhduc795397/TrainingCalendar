@@ -23,11 +23,11 @@ enum WorkoutStatusResolver {
         isCompleted: Bool,
         calendar: Calendar
     ) -> WorkoutDisplayStatus {
-        if isCompleted { return .completed }
         let scheduledDay = calendar.startOfDay(for: scheduledDate)
         let currentDay = calendar.startOfDay(for: today)
+        if scheduledDay > currentDay { return .future }
+        if isCompleted { return .completed }
         if scheduledDay < currentDay { return .missed }
-        if scheduledDay == currentDay { return .assigned }
-        return .future
+        return .assigned
     }
 }

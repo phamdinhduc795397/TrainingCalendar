@@ -16,7 +16,7 @@ struct WorkoutCardView: View {
                     metadata
                 }
                 Spacer(minLength: CalendarDesignTokens.workoutSpacing)
-                if workout.isCompleted {
+                if workout.status == .completed {
                     ZStack {
                         Circle()
                             .fill(Color.white)
@@ -58,7 +58,14 @@ struct WorkoutCardView: View {
     }
 
     private var titleColor: Color {
-        workout.isCompleted ? CalendarDesignTokens.completedText : CalendarDesignTokens.primaryText
+        switch workout.status {
+        case .completed:
+            CalendarDesignTokens.completedText
+        case .future:
+            CalendarDesignTokens.secondaryText
+        case .missed, .assigned:
+            CalendarDesignTokens.primaryText
+        }
     }
 
     @ViewBuilder
@@ -79,9 +86,15 @@ struct WorkoutCardView: View {
                 .font(.system(size: 14, weight: .regular))
                 .foregroundStyle(CalendarDesignTokens.completedText)
         case .assigned:
-            Text(workout.exerciseCountText)
-                .font(.system(size: 14, weight: .regular))
-                .foregroundStyle(CalendarDesignTokens.primaryText)
+            HStack(spacing: 6) {
+                Text("Assigned")
+                    .foregroundStyle(CalendarDesignTokens.primaryText)
+                Text("•")
+                    .foregroundStyle(CalendarDesignTokens.primaryText)
+                Text(workout.exerciseCountText)
+                    .foregroundStyle(CalendarDesignTokens.primaryText)
+            }
+            .font(.system(size: 14, weight: .regular))
         case .future:
             Text(workout.exerciseCountText)
                 .font(.system(size: 14, weight: .regular))

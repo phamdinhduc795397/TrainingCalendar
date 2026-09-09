@@ -15,7 +15,7 @@ struct WorkoutStatusResolverTests {
         (1, false, WorkoutDisplayStatus.future),
         (-1, true, WorkoutDisplayStatus.completed),
         (0, true, WorkoutDisplayStatus.completed),
-        (1, true, WorkoutDisplayStatus.completed)
+        (1, true, WorkoutDisplayStatus.future)
     ])
     func resolvesStatus(dayOffset: Int, isCompleted: Bool, expected: WorkoutDisplayStatus) throws {
         let today = try #require(calendar.date(from: DateComponents(year: 2026, month: 9, day: 9, hour: 12)))
