@@ -29,7 +29,16 @@ Run the unit-test suite with:
 
 ## AI Collaboration
 
-Tools used: OpenAI Codex for requirement analysis, architecture exploration, implementation planning, and test-case review.
+OpenAI Codex coordinated the work across these stages and models:
+
+| Stage | Model |
+| --- | --- |
+| Requirements analysis, brainstorming, specification, and implementation planning | OpenAI Codex / GPT-6 |
+| Feature implementation and corrective changes | GPT-5.6 Terra subagents |
+| Consolidated code review and fix verification | GPT-6 Astra |
+| Documentation updates | OpenAI Codex / GPT-5 |
+
+Subagent changes were reviewed and verified by the primary Codex agent before completion.
 
 Representative prompts:
 
