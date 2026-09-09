@@ -32,9 +32,10 @@ struct TrainingCalendarApp: App {
             try? modelContainer.mainContext.save()
         }
         let now: () -> Date = isUITesting ? { Self.uiTestDate } : { Date() }
+        let calendar = isUITesting ? Self.uiTestCalendar : Calendar.current
         let repository = SwiftDataWorkoutRepository(context: modelContainer.mainContext, source: source, now: now)
         container = modelContainer
-        viewModel = TrainingCalendarViewModel(repository: repository, now: now)
+        viewModel = TrainingCalendarViewModel(repository: repository, calendar: calendar, now: now)
     }
 
     var body: some Scene {
@@ -45,8 +46,13 @@ struct TrainingCalendarApp: App {
     }
 
     private static let uiTestDate: Date = {
+        uiTestCalendar.date(from: DateComponents(year: 2026, month: 9, day: 9, hour: 12))!
+    }()
+
+    private static var uiTestCalendar: Calendar {
         var calendar = Calendar(identifier: .gregorian)
         calendar.timeZone = TimeZone(secondsFromGMT: 0)!
-        return calendar.date(from: DateComponents(year: 2026, month: 9, day: 9, hour: 12))!
-    }()
+        calendar.locale = Locale(identifier: "en_US_POSIX")
+        return calendar
+    }
 }

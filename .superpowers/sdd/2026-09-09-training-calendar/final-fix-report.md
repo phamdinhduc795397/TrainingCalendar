@@ -9,7 +9,8 @@
 - Made empty day containers occupy the full available width with leading alignment.
 - Added adaptive dark-mode colors for brand, missed, and completed card states.
 - Added scheduled date and explicit future/completion state to workout VoiceOver labels.
-- Made UI-test time deterministic with a fixed September 2026 date, exposed day-date identifiers, and exercised an offscreen day after scrolling.
+- Made UI-test time deterministic with a fixed UTC Gregorian September 2026 calendar and date, exposed day-date identifiers, and exercised an offscreen day after scrolling.
+- Updated the UI test to scroll only until lazy content is hittable and to wait for the completed accessibility label after each completion toggle.
 
 ## Verification
 

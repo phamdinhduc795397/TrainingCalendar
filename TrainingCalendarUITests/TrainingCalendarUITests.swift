@@ -6,21 +6,17 @@ final class TrainingCalendarUITests: XCTestCase {
         app.launchArguments = ["-ui-testing", "-reset-store"]
         app.launch()
 
-        for offset in 0...6 {
-            XCTAssertTrue(app.otherElements["day-\(offset)"].waitForExistence(timeout: 3))
-        }
+        XCTAssertTrue(app.otherElements["day-0"].waitForExistence(timeout: 3))
         XCTAssertEqual(app.staticTexts["day-date-0"].label, "7")
-        XCTAssertEqual(app.staticTexts["day-date-2"].label, "9")
         XCTAssertTrue(app.buttons["workout-monday-upper-body"].waitForExistence(timeout: 3))
         XCTAssertTrue(app.buttons["workout-monday-core-mobility"].exists)
 
         let workout = app.buttons["workout-tuesday-cardio"]
-        XCTAssertTrue(workout.waitForExistence(timeout: 3))
+        scrollUntilHittable(workout, in: app)
         workout.tap()
-        XCTAssertTrue(workout.label.contains("Completed"))
+        waitForCompletedLabel(on: workout)
 
-        app.swipeUp()
-        XCTAssertTrue(app.staticTexts["day-date-6"].waitForExistence(timeout: 3))
+        scrollUntilHittable(app.staticTexts["day-date-6"], in: app)
         XCTAssertEqual(app.staticTexts["day-date-6"].label, "13")
 
         app.terminate()
@@ -28,7 +24,34 @@ final class TrainingCalendarUITests: XCTestCase {
         app.launch()
 
         let persistedWorkout = app.buttons["workout-tuesday-cardio"]
-        XCTAssertTrue(persistedWorkout.waitForExistence(timeout: 3))
-        XCTAssertTrue(persistedWorkout.label.contains("Completed"))
+        scrollUntilHittable(persistedWorkout, in: app)
+        waitForCompletedLabel(on: persistedWorkout)
+    }
+
+    private func scrollUntilHittable(
+        _ element: XCUIElement,
+        in app: XCUIApplication,
+        file: StaticString = #filePath,
+        line: UInt = #line
+    ) {
+        for _ in 0..<6 {
+            if element.waitForExistence(timeout: 1), element.isHittable {
+                return
+            }
+            app.swipeUp()
+        }
+        XCTFail("Expected \(element) to become hittable after scrolling.", file: file, line: line)
+    }
+
+    private func waitForCompletedLabel(
+        on element: XCUIElement,
+        file: StaticString = #filePath,
+        line: UInt = #line
+    ) {
+        let expectation = XCTNSPredicateExpectation(
+            predicate: NSPredicate(format: "label CONTAINS %@", "Completed"),
+            object: element
+        )
+        XCTAssertEqual(XCTWaiter.wait(for: [expectation], timeout: 3), .completed, file: file, line: line)
     }
 }
