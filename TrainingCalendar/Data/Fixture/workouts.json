@@ -1,0 +1,9 @@
+[
+  {"id":"monday-upper-body","name":"Upper Body Strength","exerciseCount":8,"weekdayOffset":0,"initiallyCompleted":false},
+  {"id":"monday-core-mobility","name":"Core & Mobility","exerciseCount":6,"weekdayOffset":0,"initiallyCompleted":true},
+  {"id":"tuesday-cardio","name":"Morning Cardio","exerciseCount":5,"weekdayOffset":1,"initiallyCompleted":false},
+  {"id":"wednesday-full-body","name":"Full Body Workout","exerciseCount":10,"weekdayOffset":2,"initiallyCompleted":false},
+  {"id":"wednesday-recovery","name":"Recovery Stretch","exerciseCount":4,"weekdayOffset":2,"initiallyCompleted":false},
+  {"id":"friday-lower-body","name":"Lower Body Strength","exerciseCount":9,"weekdayOffset":4,"initiallyCompleted":false},
+  {"id":"saturday-endurance","name":"Weekend Endurance and Conditioning Session","exerciseCount":12,"weekdayOffset":5,"initiallyCompleted":false}
+]
