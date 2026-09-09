@@ -20,12 +20,7 @@ struct TrainingCalendarApp: App {
             fatalError("Unable to configure Training Calendar: \(error)")
         }
 
-        let source: any WorkoutFixtureSource
-        do {
-            source = try BundledWorkoutFixtureSource(bundle: .main)
-        } catch {
-            source = UnavailableWorkoutFixtureSource(error: .missingResource("workouts.json"))
-        }
+        let source: any WorkoutFixtureSource = RemoteWorkoutFixtureSource()
         if isUITesting && ProcessInfo.processInfo.arguments.contains("-reset-store") {
             try? modelContainer.mainContext.delete(model: CachedWorkout.self)
             try? modelContainer.mainContext.delete(model: WorkoutCompletionOverride.self)

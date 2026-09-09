@@ -15,11 +15,11 @@ A SwiftUI implementation of Everfit's current-week training calendar assignment.
 
 ## Architecture
 
-The app uses lean MVVM. Pure domain services calculate Monday-through-Sunday dates and workout statuses. `TrainingCalendarViewModel` creates immutable screen presentation values. `SwiftDataWorkoutRepository` loads cached definitions immediately, refreshes from bundled JSON, and stores explicit completion overrides separately by workout ID.
+The app uses lean MVVM. Pure domain services calculate Monday-through-Sunday dates and workout statuses. `TrainingCalendarViewModel` creates immutable screen presentation values. `SwiftDataWorkoutRepository` loads cached definitions immediately, refreshes from the supplied Everfit mock API, and stores explicit completion overrides separately by workout ID.
 
 ## Data and Caching
 
-`workouts.json` uses relative weekday offsets so the sample remains in the current week. To change sample content, preserve unique IDs and use offsets 0 through 6. On launch, cached data appears first, then the bundle is decoded and atomically replaces cached definitions. Local completion and uncompletion overrides survive refresh and relaunch.
+The app requests `https://thinhleeverfit.github.io/everfit-ios-test-mock-api/workouts.json`. It maps each API `day` value to the Monday-first weekday offset and flattens that day's assignments in API order. Assignment status `2` is initially completed; statuses `0` and `1` are initially incomplete. On launch, cached data appears first, then the response is decoded and atomically replaces cached definitions. Local completion and uncompletion overrides survive refresh and relaunch.
 
 ## Testing
 
