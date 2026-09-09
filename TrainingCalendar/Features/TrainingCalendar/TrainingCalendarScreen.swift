@@ -2,6 +2,7 @@ import SwiftUI
 
 struct TrainingCalendarScreen: View {
     @State var viewModel: TrainingCalendarViewModel
+    @Environment(\.scenePhase) private var scenePhase
 
     var body: some View {
         NavigationStack {
@@ -22,6 +23,12 @@ struct TrainingCalendarScreen: View {
                     } else if let message = viewModel.refreshErrorMessage {
                         errorView(message)
                     }
+
+                    if let message = viewModel.completionErrorMessage {
+                        Text(message)
+                            .font(.footnote)
+                            .accessibilityIdentifier("completion-error")
+                    }
                 }
                 .padding(.horizontal, CalendarDesignTokens.screenHorizontalPadding)
             }
@@ -34,6 +41,17 @@ struct TrainingCalendarScreen: View {
             }
         }
         .task { await viewModel.load() }
+        .onChange(of: scenePhase) { _, newPhase in
+            if newPhase == .active {
+                viewModel.refreshDateDependentPresentation()
+            }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .NSCalendarDayChanged)) { _ in
+            viewModel.refreshDateDependentPresentation()
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .NSSystemTimeZoneDidChange)) { _ in
+            viewModel.refreshDateDependentPresentation(calendar: .current)
+        }
     }
 
     private func errorView(_ message: String) -> some View {

@@ -86,14 +86,44 @@ struct TrainingCalendarViewModelTests {
 
         await viewModel.toggleCompletion(workoutID: "workout-0")
 
-        #expect(viewModel.refreshErrorMessage == "Unable to save completion. Please try again.")
+        #expect(viewModel.refreshErrorMessage == nil)
+        #expect(viewModel.completionErrorMessage == "Unable to save completion. Tap the workout to try again.")
         #expect(viewModel.days[5].workouts[0].isCompleted == false)
 
         await viewModel.toggleCompletion(workoutID: "workout-0")
 
         #expect(viewModel.days[5].workouts[0].isCompleted)
         #expect(viewModel.days[5].workouts[0].status == .completed)
-        #expect(viewModel.refreshErrorMessage == nil)
+        #expect(viewModel.completionErrorMessage == nil)
+    }
+
+    @Test func retryDoesNotStartAnotherRefreshWhileOneIsRunning() async {
+        let repository = ControlledRepository(cached: .empty)
+        let viewModel = makeViewModel(repository: repository)
+
+        let task = Task { await viewModel.load() }
+        await repository.waitUntilRefreshStarts()
+        await viewModel.retry()
+
+        #expect(repository.refreshInvocationCount == 1)
+        repository.finishRefresh(with: .empty)
+        await task.value
+    }
+
+    @Test func refreshesWeekAndAccessibilityDateWhenClockCrossesMonday() async throws {
+        let clock = MutableClock(date: try testDate(year: 2026, month: 9, day: 9))
+        let repository = RecordingRepository(snapshot: snapshot(offsets: [6]))
+        let viewModel = makeViewModel(repository: repository, now: { clock.date })
+        await viewModel.load()
+
+        #expect(viewModel.days[6].workouts[0].accessibilityLabel.contains("Sunday, September 13"))
+        #expect(viewModel.days[6].workouts[0].accessibilityLabel.contains("Future"))
+
+        clock.date = try testDate(year: 2026, month: 9, day: 14)
+        viewModel.refreshDateDependentPresentation()
+
+        #expect(viewModel.days.map(\.dayText) == ["14", "15", "16", "17", "18", "19", "20"])
+        #expect(viewModel.days[6].workouts[0].accessibilityLabel.contains("Sunday, September 20"))
     }
 
     @Test func exposesInitialErrorWhileKeepingSevenDates() async {
@@ -112,10 +142,12 @@ private final class ControlledRepository: WorkoutRepositoryProtocol {
     private var refreshStarted = false
     private var startWaiters: [CheckedContinuation<Void, Never>] = []
     private var refreshContinuation: CheckedContinuation<WorkoutSnapshot, Error>?
+    private(set) var refreshInvocationCount = 0
 
     init(cached: WorkoutSnapshot) { self.cached = cached }
     func cachedSnapshot() async throws -> WorkoutSnapshot { cached }
     func refresh() async throws -> WorkoutSnapshot {
+        refreshInvocationCount += 1
         refreshStarted = true
         startWaiters.forEach { $0.resume() }
         startWaiters.removeAll()
@@ -166,7 +198,31 @@ private func makeViewModel(repository: any WorkoutRepositoryProtocol) -> Trainin
     var calendar = Calendar(identifier: .gregorian)
     calendar.timeZone = TimeZone(secondsFromGMT: 0)!
     let now = calendar.date(from: DateComponents(year: 2026, month: 9, day: 9, hour: 12))!
+    calendar.locale = Locale(identifier: "en_US_POSIX")
     return TrainingCalendarViewModel(repository: repository, calendar: calendar, now: { now })
+}
+
+@MainActor
+private func makeViewModel(
+    repository: any WorkoutRepositoryProtocol,
+    now: @escaping () -> Date
+) -> TrainingCalendarViewModel {
+    var calendar = Calendar(identifier: .gregorian)
+    calendar.timeZone = TimeZone(secondsFromGMT: 0)!
+    calendar.locale = Locale(identifier: "en_US_POSIX")
+    return TrainingCalendarViewModel(repository: repository, calendar: calendar, now: now)
+}
+
+@MainActor
+private final class MutableClock {
+    var date: Date
+    init(date: Date) { self.date = date }
+}
+
+private func testDate(year: Int, month: Int, day: Int) throws -> Date {
+    var calendar = Calendar(identifier: .gregorian)
+    calendar.timeZone = TimeZone(secondsFromGMT: 0)!
+    return try #require(calendar.date(from: DateComponents(year: year, month: month, day: day, hour: 12)))
 }
 
 @MainActor

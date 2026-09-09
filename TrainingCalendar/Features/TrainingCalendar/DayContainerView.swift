@@ -12,6 +12,7 @@ struct DayContainerView: View {
                 Text(day.dayText)
                     .foregroundStyle(day.isToday ? CalendarDesignTokens.brandPurple : CalendarDesignTokens.primaryText)
                     .fontWeight(day.isToday ? .bold : .regular)
+                    .accessibilityIdentifier("day-date-\(day.weekdayOffset)")
             }
 
             ForEach(day.workouts) { workout in
@@ -27,6 +28,7 @@ struct DayContainerView: View {
                     .accessibilityHidden(true)
             }
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
         .accessibilityIdentifier("day-\(day.weekdayOffset)")
         .accessibilityElement(children: .contain)
     }

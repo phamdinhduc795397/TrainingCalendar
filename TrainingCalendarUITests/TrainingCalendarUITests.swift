@@ -9,6 +9,8 @@ final class TrainingCalendarUITests: XCTestCase {
         for offset in 0...6 {
             XCTAssertTrue(app.otherElements["day-\(offset)"].waitForExistence(timeout: 3))
         }
+        XCTAssertEqual(app.staticTexts["day-date-0"].label, "7")
+        XCTAssertEqual(app.staticTexts["day-date-2"].label, "9")
         XCTAssertTrue(app.buttons["workout-monday-upper-body"].waitForExistence(timeout: 3))
         XCTAssertTrue(app.buttons["workout-monday-core-mobility"].exists)
 
@@ -16,6 +18,10 @@ final class TrainingCalendarUITests: XCTestCase {
         XCTAssertTrue(workout.waitForExistence(timeout: 3))
         workout.tap()
         XCTAssertTrue(workout.label.contains("Completed"))
+
+        app.swipeUp()
+        XCTAssertTrue(app.staticTexts["day-date-6"].waitForExistence(timeout: 3))
+        XCTAssertEqual(app.staticTexts["day-date-6"].label, "13")
 
         app.terminate()
         app.launchArguments = ["-ui-testing"]

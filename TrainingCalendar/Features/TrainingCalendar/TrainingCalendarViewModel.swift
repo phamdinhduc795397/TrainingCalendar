@@ -8,11 +8,13 @@ final class TrainingCalendarViewModel {
     private(set) var phase: TrainingCalendarPhase = .loading
     private(set) var isRefreshing = false
     private(set) var refreshErrorMessage: String?
+    private(set) var completionErrorMessage: String?
 
     private let repository: any WorkoutRepositoryProtocol
-    private let calendar: Calendar
+    private var calendar: Calendar
     private let now: () -> Date
     private var loadTask: Task<Void, Never>?
+    private var latestSnapshot = WorkoutSnapshot.empty
 
     init(repository: any WorkoutRepositoryProtocol, calendar: Calendar = .current, now: @escaping () -> Date = Date.init) {
         self.repository = repository
@@ -29,25 +31,38 @@ final class TrainingCalendarViewModel {
         loadTask = nil
     }
 
-    func retry() async { await refresh(hasVisibleContent: days.contains { !$0.workouts.isEmpty }) }
+    func retry() async {
+        guard !isRefreshing, loadTask == nil else { return }
+        await refresh(hasVisibleContent: days.contains { !$0.workouts.isEmpty })
+    }
 
     func toggleCompletion(workoutID: String) async {
         do {
             let snapshot = try await repository.toggleCompletion(workoutID: workoutID)
+            latestSnapshot = snapshot
             days = makeDays(snapshot: snapshot)
-            refreshErrorMessage = nil
+            completionErrorMessage = nil
         } catch {
-            refreshErrorMessage = "Unable to save completion. Please try again."
+            completionErrorMessage = "Unable to save completion. Tap the workout to try again."
         }
+    }
+
+    func refreshDateDependentPresentation(calendar updatedCalendar: Calendar? = nil) {
+        if let updatedCalendar {
+            calendar = updatedCalendar
+        }
+        days = makeDays(snapshot: latestSnapshot)
     }
 
     private func performInitialLoad() async {
         days = makeDays(snapshot: .empty)
+        latestSnapshot = .empty
         phase = .loading
         var hasVisibleContent = false
         do {
             let cached = try await repository.cachedSnapshot()
             if !cached.definitions.isEmpty {
+                latestSnapshot = cached
                 days = makeDays(snapshot: cached)
                 phase = .loaded
                 hasVisibleContent = true
@@ -59,10 +74,12 @@ final class TrainingCalendarViewModel {
     }
 
     private func refresh(hasVisibleContent: Bool) async {
-        isRefreshing = hasVisibleContent
+        guard !isRefreshing else { return }
+        isRefreshing = true
         defer { isRefreshing = false }
         do {
             let refreshed = try await repository.refresh()
+            latestSnapshot = refreshed
             days = makeDays(snapshot: refreshed)
             phase = .loaded
             refreshErrorMessage = nil
@@ -89,6 +106,11 @@ final class TrainingCalendarViewModel {
         dayFormatter.timeZone = calendar.timeZone
         dayFormatter.locale = calendar.locale ?? .current
         dayFormatter.dateFormat = "d"
+        let accessibilityDateFormatter = DateFormatter()
+        accessibilityDateFormatter.calendar = calendar
+        accessibilityDateFormatter.timeZone = calendar.timeZone
+        accessibilityDateFormatter.locale = calendar.locale ?? .current
+        accessibilityDateFormatter.dateStyle = .full
 
         return week.enumerated().map { offset, date in
             let workouts = snapshot.definitions
@@ -99,7 +121,13 @@ final class TrainingCalendarViewModel {
                     let status = WorkoutStatusResolver.resolve(scheduledDate: date, today: currentDate, isCompleted: completed, calendar: calendar)
                     let countText = definition.exerciseCount == 1 ? "1 exercise" : "\(definition.exerciseCount) exercises"
                     let statusText = status.label
-                    let accessibility = [definition.name, countText, statusText].compactMap { $0 }.joined(separator: ", ")
+                    let accessibilityStatus = statusText ?? "Future"
+                    let accessibility = [
+                        definition.name,
+                        countText,
+                        accessibilityDateFormatter.string(from: date),
+                        accessibilityStatus
+                    ].joined(separator: ", ")
                     return WorkoutPresentation(id: definition.id, name: definition.name, exerciseCountText: countText, status: status, statusText: statusText, isCompleted: completed, accessibilityLabel: accessibility)
                 }
             return DayPresentation(

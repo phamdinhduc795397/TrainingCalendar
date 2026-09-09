@@ -51,6 +51,14 @@ struct BundledWorkoutFixtureSourceTests {
         }
     }
 
+    @Test func unavailableSourceDefersResourceFailureUntilLoad() async {
+        let source = UnavailableWorkoutFixtureSource(error: .missingResource("workouts.json"))
+
+        await #expect(throws: WorkoutFixtureError.missingResource("workouts.json")) {
+            try await source.load()
+        }
+    }
+
     private func fixtureURL(contents: String) throws -> URL {
         let url = FileManager.default.temporaryDirectory.appending(path: UUID().uuidString).appendingPathExtension("json")
         try Data(contents.utf8).write(to: url)

@@ -9,24 +9,32 @@ struct TrainingCalendarApp: App {
     init() {
         let isUITesting = ProcessInfo.processInfo.arguments.contains("-ui-testing")
         let configuration = ModelConfiguration(isStoredInMemoryOnly: false)
+        let modelContainer: ModelContainer
         do {
-            let modelContainer = try ModelContainer(
+            modelContainer = try ModelContainer(
                 for: CachedWorkout.self,
                 WorkoutCompletionOverride.self,
                 configurations: configuration
             )
-            let source = try BundledWorkoutFixtureSource(bundle: .main)
-            let repository = SwiftDataWorkoutRepository(context: modelContainer.mainContext, source: source)
-            if isUITesting && ProcessInfo.processInfo.arguments.contains("-reset-store") {
-                try modelContainer.mainContext.delete(model: CachedWorkout.self)
-                try modelContainer.mainContext.delete(model: WorkoutCompletionOverride.self)
-                try modelContainer.mainContext.save()
-            }
-            container = modelContainer
-            viewModel = TrainingCalendarViewModel(repository: repository)
         } catch {
             fatalError("Unable to configure Training Calendar: \(error)")
         }
+
+        let source: any WorkoutFixtureSource
+        do {
+            source = try BundledWorkoutFixtureSource(bundle: .main)
+        } catch {
+            source = UnavailableWorkoutFixtureSource(error: .missingResource("workouts.json"))
+        }
+        if isUITesting && ProcessInfo.processInfo.arguments.contains("-reset-store") {
+            try? modelContainer.mainContext.delete(model: CachedWorkout.self)
+            try? modelContainer.mainContext.delete(model: WorkoutCompletionOverride.self)
+            try? modelContainer.mainContext.save()
+        }
+        let now: () -> Date = isUITesting ? { Self.uiTestDate } : { Date() }
+        let repository = SwiftDataWorkoutRepository(context: modelContainer.mainContext, source: source, now: now)
+        container = modelContainer
+        viewModel = TrainingCalendarViewModel(repository: repository, now: now)
     }
 
     var body: some Scene {
@@ -35,4 +43,10 @@ struct TrainingCalendarApp: App {
         }
         .modelContainer(container)
     }
+
+    private static let uiTestDate: Date = {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(secondsFromGMT: 0)!
+        return calendar.date(from: DateComponents(year: 2026, month: 9, day: 9, hour: 12))!
+    }()
 }

@@ -7,7 +7,8 @@ import Testing
 struct WorkoutRepositoryTests {
     @Test func refreshPreservesExplicitFalseOverride() async throws {
         let fixture = StubFixtureSource(definitions: [definition(id: "a", initiallyCompleted: true)])
-        let repository = try makeRepository(source: fixture)
+        let harness = try makeRepository(source: fixture)
+        let repository = harness.repository
         _ = try await repository.refresh()
         _ = try await repository.toggleCompletion(workoutID: "a")
 
@@ -41,7 +42,8 @@ struct WorkoutRepositoryTests {
             [definition(id: "old"), definition(id: "kept", sortOrder: 1)],
             [definition(id: "new", sortOrder: 1), definition(id: "kept", sortOrder: 0)]
         ])
-        let repository = try makeRepository(source: source)
+        let harness = try makeRepository(source: source)
+        let repository = harness.repository
         _ = try await repository.refresh()
         _ = try await repository.toggleCompletion(workoutID: "old")
 
@@ -52,7 +54,8 @@ struct WorkoutRepositoryTests {
     }
 
     @Test func unknownToggleThrows() async throws {
-        let repository = try makeRepository(source: StubFixtureSource(definitions: []))
+        let harness = try makeRepository(source: StubFixtureSource(definitions: []))
+        let repository = harness.repository
 
         await #expect(throws: WorkoutRepositoryError.workoutNotFound("missing")) {
             try await repository.toggleCompletion(workoutID: "missing")
@@ -115,13 +118,24 @@ private func makeContainer() throws -> ModelContainer {
 }
 
 @MainActor
-private func makeRepository(source: any WorkoutFixtureSource) throws -> SwiftDataWorkoutRepository {
+private final class RepositoryHarness {
+    let container: ModelContainer
+    let repository: SwiftDataWorkoutRepository
+
+    init(container: ModelContainer, source: any WorkoutFixtureSource) {
+        self.container = container
+        repository = SwiftDataWorkoutRepository(
+            context: container.mainContext,
+            source: source,
+            now: { Date(timeIntervalSince1970: 1) }
+        )
+    }
+}
+
+@MainActor
+private func makeRepository(source: any WorkoutFixtureSource) throws -> RepositoryHarness {
     let container = try makeContainer()
-    return SwiftDataWorkoutRepository(
-        context: container.mainContext,
-        source: source,
-        now: { Date(timeIntervalSince1970: 1) }
-    )
+    return RepositoryHarness(container: container, source: source)
 }
 
 private func definition(
