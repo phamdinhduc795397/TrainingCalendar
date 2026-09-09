@@ -6,7 +6,7 @@ struct DayContainerView: View {
     let onWorkoutTap: (String) -> Void
 
     var body: some View {
-        HStack(alignment: .top, spacing: 0) {
+        HStack(alignment: .top, spacing: 16) {
             VStack(alignment: .leading, spacing: CalendarDesignTokens.dayHeaderSpacing) {
                 Text(day.weekdayText)
                     .font(.system(size: 14, weight: .semibold))
@@ -18,9 +18,7 @@ struct DayContainerView: View {
                     .fontWeight(day.isToday ? .bold : .regular)
                     .accessibilityIdentifier("day-date-\(day.weekdayOffset)")
             }
-            .padding(.leading, CalendarDesignTokens.dayRailLeadingInset)
-            .padding(.top, CalendarDesignTokens.dayVerticalPadding + 4)
-            .frame(width: CalendarDesignTokens.dayRailWidth, alignment: .leading)
+            .frame(width: CalendarDesignTokens.dayRailWidth, height: CalendarDesignTokens.minimumTapTargetHeight, alignment: .leading)
 
             VStack(alignment: .leading, spacing: CalendarDesignTokens.workoutSpacing) {
                 ForEach(day.workouts) { workout in
@@ -28,7 +26,6 @@ struct DayContainerView: View {
                         onWorkoutTap(workout.id)
                     }
                 }
-
                 if isLoading && day.workouts.isEmpty {
                     WorkoutCardView(workout: .placeholder, onTap: {})
                         .redacted(reason: .placeholder)
@@ -36,10 +33,9 @@ struct DayContainerView: View {
                         .accessibilityHidden(true)
                 }
             }
-            .padding(.vertical, CalendarDesignTokens.dayVerticalPadding)
-            .padding(.trailing, CalendarDesignTokens.cardPadding)
             .frame(maxWidth: .infinity, alignment: .leading)
         }
+        .padding(.vertical, CalendarDesignTokens.dayVerticalPadding)
         .frame(minHeight: CalendarDesignTokens.dayMinimumHeight, alignment: .topLeading)
         .frame(maxWidth: .infinity, alignment: .leading)
         .overlay(alignment: .bottom) {

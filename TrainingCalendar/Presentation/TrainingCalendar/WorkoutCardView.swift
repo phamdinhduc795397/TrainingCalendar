@@ -34,7 +34,6 @@ struct WorkoutCardView: View {
                 alignment: .leading
             )
             .padding(.horizontal, CalendarDesignTokens.cardPadding)
-            .padding(.vertical, CalendarDesignTokens.cardVerticalPadding)
             .background(backgroundColor)
             .clipShape(RoundedRectangle(cornerRadius: CalendarDesignTokens.cardCornerRadius))
         }

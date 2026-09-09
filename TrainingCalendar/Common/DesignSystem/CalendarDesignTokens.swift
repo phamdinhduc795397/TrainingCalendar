@@ -4,7 +4,7 @@ import UIKit
 enum CalendarDesignTokens {
     static let screenHorizontalPadding: CGFloat = 0
     static let daySpacing: CGFloat = 0
-    static let dayRailWidth: CGFloat = 116
+    static let dayRailWidth: CGFloat = 36
     static let dayRailLeadingInset: CGFloat = 28
     static let dayHeaderSpacing: CGFloat = 4
     static let dayVerticalPadding: CGFloat = 20
@@ -12,7 +12,7 @@ enum CalendarDesignTokens {
     static let workoutSpacing: CGFloat = 10
     static let workoutContentSpacing: CGFloat = 12
     static let workoutTextSpacing: CGFloat = 5
-    static let cardPadding: CGFloat = 18
+    static let cardPadding: CGFloat = 20
     static let cardVerticalPadding: CGFloat = 16
     static let cardCornerRadius: CGFloat = 16
     static let minimumTapTargetHeight: CGFloat = 80

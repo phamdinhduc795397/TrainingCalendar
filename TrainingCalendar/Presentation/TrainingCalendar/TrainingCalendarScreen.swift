@@ -25,7 +25,7 @@ struct TrainingCalendarScreen: View {
                             .accessibilityIdentifier("completion-error")
                     }
                 }
-                .padding(.horizontal, CalendarDesignTokens.screenHorizontalPadding)
+                .padding(.horizontal, CalendarDesignTokens.cardPadding)
                 .frame(maxWidth: .infinity, alignment: .leading)
             }
             .navigationTitle("Training Calendar")
