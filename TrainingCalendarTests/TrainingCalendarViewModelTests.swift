@@ -60,6 +60,42 @@ struct TrainingCalendarViewModelTests {
         #expect(viewModel.days[5].workouts[0].statusText == nil)
     }
 
+    @Test func formatsDatesInInjectedTimeZoneAheadOfDevice() async {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(secondsFromGMT: 14 * 60 * 60)!
+        calendar.locale = Locale(identifier: "en_US_POSIX")
+        let now = calendar.date(from: DateComponents(year: 2026, month: 9, day: 9, hour: 12))!
+        let viewModel = TrainingCalendarViewModel(
+            repository: RecordingRepository(snapshot: .empty),
+            calendar: calendar,
+            now: { now }
+        )
+
+        await viewModel.load()
+
+        #expect(viewModel.days.map(\.weekdayText) == ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"])
+        #expect(viewModel.days.map(\.dayText) == ["7", "8", "9", "10", "11", "12", "13"])
+        #expect(viewModel.days.filter(\.isToday).map(\.dayText) == ["9"])
+    }
+
+    @Test func successfulToggleClearsPreviousSaveError() async {
+        let repository = RecordingRepository(snapshot: snapshot(offsets: [5]))
+        let viewModel = makeViewModel(repository: repository)
+        await viewModel.load()
+        repository.failNextToggle = true
+
+        await viewModel.toggleCompletion(workoutID: "workout-0")
+
+        #expect(viewModel.refreshErrorMessage == "Unable to save completion. Please try again.")
+        #expect(viewModel.days[5].workouts[0].isCompleted == false)
+
+        await viewModel.toggleCompletion(workoutID: "workout-0")
+
+        #expect(viewModel.days[5].workouts[0].isCompleted)
+        #expect(viewModel.days[5].workouts[0].status == .completed)
+        #expect(viewModel.refreshErrorMessage == nil)
+    }
+
     @Test func exposesInitialErrorWhileKeepingSevenDates() async {
         let viewModel = makeViewModel(repository: FailingRefreshRepository(cached: .empty))
 
@@ -93,7 +129,7 @@ private final class ControlledRepository: WorkoutRepositoryProtocol {
     func finishRefresh(with snapshot: WorkoutSnapshot) { refreshContinuation?.resume(returning: snapshot) }
 }
 
-private enum TestFailure: Error { case refresh }
+private enum TestFailure: Error { case refresh, save }
 
 @MainActor
 private final class FailingRefreshRepository: WorkoutRepositoryProtocol {
@@ -108,10 +144,15 @@ private final class FailingRefreshRepository: WorkoutRepositoryProtocol {
 private final class RecordingRepository: WorkoutRepositoryProtocol {
     private var snapshotValue: WorkoutSnapshot
     private(set) var toggledIDs: [String] = []
+    var failNextToggle = false
     init(snapshot: WorkoutSnapshot) { snapshotValue = snapshot }
     func cachedSnapshot() async throws -> WorkoutSnapshot { snapshotValue }
     func refresh() async throws -> WorkoutSnapshot { snapshotValue }
     func toggleCompletion(workoutID: String) async throws -> WorkoutSnapshot {
+        if failNextToggle {
+            failNextToggle = false
+            throw TestFailure.save
+        }
         toggledIDs.append(workoutID)
         var overrides = snapshotValue.completionOverrides
         overrides[workoutID] = !snapshotValue.effectiveCompletion(for: workoutID)

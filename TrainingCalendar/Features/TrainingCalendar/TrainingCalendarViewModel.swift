@@ -35,6 +35,7 @@ final class TrainingCalendarViewModel {
         do {
             let snapshot = try await repository.toggleCompletion(workoutID: workoutID)
             days = makeDays(snapshot: snapshot)
+            refreshErrorMessage = nil
         } catch {
             refreshErrorMessage = "Unable to save completion. Please try again."
         }
@@ -80,10 +81,12 @@ final class TrainingCalendarViewModel {
         guard let week = try? CurrentWeekBuilder.days(containing: currentDate, calendar: calendar) else { return [] }
         let weekdayFormatter = DateFormatter()
         weekdayFormatter.calendar = calendar
+        weekdayFormatter.timeZone = calendar.timeZone
         weekdayFormatter.locale = calendar.locale ?? .current
         weekdayFormatter.dateFormat = "EEE"
         let dayFormatter = DateFormatter()
         dayFormatter.calendar = calendar
+        dayFormatter.timeZone = calendar.timeZone
         dayFormatter.locale = calendar.locale ?? .current
         dayFormatter.dateFormat = "d"
 
