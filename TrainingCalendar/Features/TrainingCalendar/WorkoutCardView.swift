@@ -9,22 +9,22 @@ struct WorkoutCardView: View {
             HStack(spacing: CalendarDesignTokens.workoutContentSpacing) {
                 VStack(alignment: .leading, spacing: CalendarDesignTokens.workoutTextSpacing) {
                     Text(workout.name)
-                        .font(.headline)
+                        .font(.system(size: 17, weight: .bold))
+                        .foregroundStyle(titleColor)
                         .lineLimit(1)
                         .truncationMode(.tail)
-                    Text(workout.exerciseCountText)
-                        .font(.subheadline)
-                        .foregroundStyle(CalendarDesignTokens.secondaryText)
-                    if let statusText = workout.statusText {
-                        Text(statusText)
-                            .font(.caption.weight(.semibold))
-                    }
+                    metadata
                 }
                 Spacer(minLength: CalendarDesignTokens.workoutSpacing)
                 if workout.isCompleted {
-                    Image(systemName: "checkmark.circle.fill")
-                        .font(.system(size: CalendarDesignTokens.checkmarkSize))
-                        .foregroundStyle(CalendarDesignTokens.brandPurple)
+                    ZStack {
+                        Circle()
+                            .fill(Color.white)
+                        Image(systemName: "checkmark")
+                            .font(.system(size: 14, weight: .bold))
+                            .foregroundStyle(CalendarDesignTokens.brandPurple)
+                    }
+                    .frame(width: CalendarDesignTokens.checkmarkSize, height: CalendarDesignTokens.checkmarkSize)
                         .accessibilityHidden(true)
                 }
             }
@@ -33,7 +33,8 @@ struct WorkoutCardView: View {
                 minHeight: CalendarDesignTokens.minimumTapTargetHeight,
                 alignment: .leading
             )
-            .padding(CalendarDesignTokens.cardPadding)
+            .padding(.horizontal, CalendarDesignTokens.cardPadding)
+            .padding(.vertical, CalendarDesignTokens.cardVerticalPadding)
             .background(backgroundColor)
             .clipShape(RoundedRectangle(cornerRadius: CalendarDesignTokens.cardCornerRadius))
         }
@@ -53,6 +54,38 @@ struct WorkoutCardView: View {
             CalendarDesignTokens.completedBackground
         case .future:
             CalendarDesignTokens.futureBackground
+        }
+    }
+
+    private var titleColor: Color {
+        workout.isCompleted ? CalendarDesignTokens.completedText : CalendarDesignTokens.primaryText
+    }
+
+    @ViewBuilder
+    private var metadata: some View {
+        switch workout.status {
+        case .missed:
+            HStack(spacing: 6) {
+                Text("Missed")
+                    .foregroundStyle(CalendarDesignTokens.missedText)
+                Text("•")
+                    .foregroundStyle(CalendarDesignTokens.primaryText)
+                Text(workout.exerciseCountText)
+                    .foregroundStyle(CalendarDesignTokens.primaryText)
+            }
+            .font(.system(size: 14, weight: .regular))
+        case .completed:
+            Text("Completed")
+                .font(.system(size: 14, weight: .regular))
+                .foregroundStyle(CalendarDesignTokens.completedText)
+        case .assigned:
+            Text(workout.exerciseCountText)
+                .font(.system(size: 14, weight: .regular))
+                .foregroundStyle(CalendarDesignTokens.primaryText)
+        case .future:
+            Text(workout.exerciseCountText)
+                .font(.system(size: 14, weight: .regular))
+                .foregroundStyle(CalendarDesignTokens.secondaryText)
         }
     }
 }

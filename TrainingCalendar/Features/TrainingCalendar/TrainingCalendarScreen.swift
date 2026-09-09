@@ -31,6 +31,7 @@ struct TrainingCalendarScreen: View {
                     }
                 }
                 .padding(.horizontal, CalendarDesignTokens.screenHorizontalPadding)
+                .frame(maxWidth: .infinity, alignment: .leading)
             }
             .navigationTitle("Training Calendar")
             .overlay(alignment: .topTrailing) {
