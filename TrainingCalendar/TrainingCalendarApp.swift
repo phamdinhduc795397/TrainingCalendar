@@ -12,7 +12,8 @@ import SwiftData
 struct TrainingCalendarApp: App {
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
-            Item.self,
+            CachedWorkout.self,
+            WorkoutCompletionOverride.self,
         ])
         let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
 
